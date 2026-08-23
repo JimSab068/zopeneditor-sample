@@ -37,19 +37,23 @@
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
 
-           SELECT CUSTOMER-FILE ASSIGN TO CUSTFILE
+           SELECT CUSTOMER-FILE ASSIGN TO "custfile.txt"
+               ORGANIZATION IS LINE SEQUENTIAL
                ACCESS IS SEQUENTIAL
                FILE STATUS  IS  WS-CUSTFILE-STATUS.
 
-           SELECT CUSTOMER-FILE-OUT ASSIGN TO CUSTOUT
+           SELECT CUSTOMER-FILE-OUT ASSIGN TO "custout.txt"
+               ORGANIZATION IS LINE SEQUENTIAL
                ACCESS IS SEQUENTIAL
                FILE STATUS  IS  WS-CUSTOUT-STATUS.
 
-            SELECT TRANSACTION-FILE ASSIGN TO TRANFILE
-                   FILE STATUS  IS  WS-TRANFILE-STATUS.
+            SELECT TRANSACTION-FILE ASSIGN TO "tranfile.txt"
+                  ORGANIZATION IS LINE SEQUENTIAL
+                  FILE STATUS  IS  WS-TRANFILE-STATUS.
 
-            SELECT REPORT-FILE      ASSIGN TO CUSTRPT
-                   FILE STATUS  IS  WS-REPORT-STATUS.
+            SELECT REPORT-FILE      ASSIGN TO "custrpt.txt"
+                  ORGANIZATION IS LINE SEQUENTIAL
+                  FILE STATUS  IS  WS-REPORT-STATUS.
 
       *****************************************************************
        DATA DIVISION.
