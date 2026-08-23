@@ -8,3 +8,13 @@ output
 *.xml
 *.so
 *.o
+
+'EOF'
+SAM1
+SAM2.so
+first
+custout.txt
+custrpt.txt
+*.so
+*.o
+EOF
