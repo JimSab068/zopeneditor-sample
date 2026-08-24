@@ -19,4 +19,6 @@ custrpt.txt
 *.o
 EOF
 .venv
-env
+.env
+
+notes.md
