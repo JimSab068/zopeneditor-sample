@@ -18,3 +18,5 @@ custrpt.txt
 *.so
 *.o
 EOF
+.venv
+env
