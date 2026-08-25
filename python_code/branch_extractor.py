@@ -214,46 +214,53 @@ def parse_cobol(cobol_path: str) -> tuple[dict[str, list], list[str]]:
 def enumerate_branches(ast: dict[str, list], entry_paragraph: str) -> list[dict]:
     branches = []
     
-    def walk(nodes: list, conditions: list[str], path: list[str], visited: set):
+    def walk(nodes: list, conditions: list[str], path: list[str], visited: set, lines: list[int]):
         if not nodes:
             branches.append({
+                "branch_id": f"BR-{len(branches)+1:04d}",
                 "conditions": conditions,
                 "path": path,
+                "source_lines": sorted(list(set(lines))),
                 "terminal": "END_OF_PARAGRAPH"
             })
             return
             
         node = nodes[0]
         rest = nodes[1:]
+        node_line = getattr(node, "source_line", None)
+        cur_lines = lines + ([node_line] if node_line is not None else [])
         
         if isinstance(node, IfNode):
-            walk(node.then_branch + rest, conditions + [node.condition], path + [f"IF {node.condition}"], visited)
-            walk(node.else_branch + rest, conditions + [f"NOT ({node.condition})"], path + [f"ELSE ({node.condition})"], visited)
+            walk(node.then_branch + rest, conditions + [node.condition], path + [f"IF {node.condition}"], visited, cur_lines)
+            walk(node.else_branch + rest, conditions + [f"NOT ({node.condition})"], path + [f"ELSE ({node.condition})"], visited, cur_lines)
             
         elif isinstance(node, EvaluateNode):
             for clause in node.when_clauses:
                 cond_str = f"{node.subject} = " + " OR ".join(clause.values)
-                walk(clause.body + rest, conditions + [cond_str], path + [f"WHEN {cond_str}"], visited)
+                clause_lines = cur_lines + ([clause.source_line] if hasattr(clause, "source_line") else [])
+                walk(clause.body + rest, conditions + [cond_str], path + [f"WHEN {cond_str}"], visited, clause_lines)
                 
         elif isinstance(node, PerformNode):
             step_desc = f"PERFORM {node.target}" + (f" UNTIL {node.until_condition}" if node.until_condition else "")
             if node.target in ast and node.target not in visited:
-                walk(ast[node.target] + rest, conditions, path + [step_desc], visited | {node.target})
+                walk(ast[node.target] + rest, conditions, path + [step_desc], visited | {node.target}, cur_lines)
             else:
-                walk(rest, conditions, path + [step_desc], visited)
+                walk(rest, conditions, path + [step_desc], visited, cur_lines)
                 
         elif isinstance(node, CallNode):
             branches.append({
+                "branch_id": f"BR-{len(branches)+1:04d}",
                 "conditions": conditions,
                 "path": path + [f"CALL {node.target}"],
+                "source_lines": sorted(list(set(cur_lines))),
                 "terminal": f"CALL {node.target}"
             })
             
         elif isinstance(node, StatementNode):
-            walk(rest, conditions, path + [node.text], visited)
+            walk(rest, conditions, path + [node.text], visited, cur_lines)
 
     if entry_paragraph in ast:
-        walk(ast[entry_paragraph], [], [entry_paragraph], {entry_paragraph})
+        walk(ast[entry_paragraph], [], [entry_paragraph], {entry_paragraph}, [])
         
     return branches
 
