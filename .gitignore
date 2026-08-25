@@ -26,6 +26,11 @@ notes.md
 __pycache__
 __pycache__/
 /__pycache__/
+.env.*
+!.env.example
+*.pem
+*.key
+*.pyc
 pipeline_checkpoint.jsonl
 low_confidence_branch_ids.txt
 trail_runs/
