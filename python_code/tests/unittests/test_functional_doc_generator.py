@@ -1,7 +1,13 @@
 import unittest
 from harness import RunResult
-from conjecture_validator import Conjecture, ExpectedOutcome, ValidationResult
+from conjecture_validator import (
+    Conjecture,
+    ExpectedOutcome,
+    ObservedOutcome,
+    ValidationResult,
+)
 from functional_doc_generator import generate_functional_doc
+
 
 class TestFunctionalDocGenerator(unittest.TestCase):
 
@@ -10,10 +16,24 @@ class TestFunctionalDocGenerator(unittest.TestCase):
             branch_id="BR-001",
             description="Update customer name",
             input_transactions=["UPDATE 00002A        REPLACE  NAME        TEST NAME"],
-            expected=ExpectedOutcome(customer_record_contains={"00002A": "TEST NAME"})
+            expected=ExpectedOutcome(customer_record_contains={"00002A": "TEST NAME"}),
         )
         run_res = RunResult(0, "", "", "", "", [])
-        self.sample_results = [ValidationResult(conjecture=conj, passed=True, actual_run=run_res)]
+        obs = ObservedOutcome(
+            returncode=0,
+            report_contents="",
+            transactions_processed=[],
+            customer_records={"00002A": "TEST NAME"},
+        )
+        self.sample_results = [
+            ValidationResult(
+                conjecture=conj,
+                passed=True,
+                claimed=conj.expected,
+                observed=obs,
+                actual_run=run_res,
+            )
+        ]
 
     def test_generate_doc_fallback(self):
         doc = generate_functional_doc(self.sample_results)
@@ -26,6 +46,7 @@ class TestFunctionalDocGenerator(unittest.TestCase):
 
         doc = generate_functional_doc(self.sample_results, llm_client=mock_llm)
         self.assertIn("Mocked Functional Specification", doc)
+
 
 if __name__ == "__main__":
     unittest.main()
